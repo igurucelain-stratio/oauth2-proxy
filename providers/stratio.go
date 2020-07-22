@@ -12,7 +12,6 @@ import (
 	"time"
 
 	"github.com/oauth2-proxy/oauth2-proxy/pkg/apis/sessions"
-	"github.com/oauth2-proxy/oauth2-proxy/pkg/logger"
 	"github.com/oauth2-proxy/oauth2-proxy/pkg/requests"
 )
 
@@ -36,8 +35,6 @@ func (p *StratioProvider) Redeem(ctx context.Context, redirectURL, code string) 
 		return
 	}
 
-	logger.Printf("[STG] Redeem - code: %s\n", code)
-
 	params := url.Values{}
 	params.Add("redirect_uri", redirectURL)
 	params.Add("client_id", p.ClientID)
@@ -57,8 +54,6 @@ func (p *StratioProvider) Redeem(ctx context.Context, redirectURL, code string) 
 	if result.Error() != nil {
 		return nil, result.Error()
 	}
-
-	logger.Printf("[STG] Redeem - result: %s\n", result)
 
 	// blindly try json and x-www-form-urlencoded
 	var jsonResponse struct {
@@ -111,7 +106,6 @@ func NewStratioProvider(p *ProviderData) *StratioProvider {
 	if p.LoginURL.String() == "" {
 		p.LoginURL = &url.URL{Scheme: "https",
 			Host: host,
-			// Path: "/sso/login",
 			Path: "/sso/oauth2.0/authorize",
 		}
 	}
@@ -156,7 +150,6 @@ type stratioUserInfo struct {
 func (p *StratioProvider) getUserInfo(ctx context.Context, s *sessions.SessionState) (*stratioUserInfo, error) {
 	// Retrieve user info JSON
 	// Build user info url from profile url of Stratio instance
-	logger.Print("[STG] GetUserInfo")
 	var userInfo stratioUserInfo
 
 	json, err := requests.New(p.ProfileURL.String()).
@@ -176,8 +169,6 @@ func (p *StratioProvider) getUserInfo(ctx context.Context, s *sessions.SessionSt
 	attributes := json.GetPath("attributes")
 
 	for i := range attributes.MustArray() {
-		// logger.Printf("[STG] GetUSerInfo - attributes: %s\n", attributes.GetIndex(i))
-
 		uid, _ := attributes.GetIndex(i).Get("uid").String()
 		if uid != "" {
 			userInfo.UID = uid
@@ -207,27 +198,22 @@ func (p *StratioProvider) getUserInfo(ctx context.Context, s *sessions.SessionSt
 
 // GetEmailAddress returns the Account email address
 func (p *StratioProvider) GetEmailAddress(ctx context.Context, s *sessions.SessionState) (string, error) {
-	logger.Print("[STG] GetEmailAddress")
 
 	// Retrieve user info
 	userInfo, err := p.getUserInfo(ctx, s)
 	if err != nil {
 		return "", fmt.Errorf("failed to retrieve user info: %v", err)
 	}
-	logger.Printf("[STG] GetEmailAddress - userInfo.Email: %s\n", userInfo.Email)
 	return userInfo.Email, nil
 }
 
 // GetUserName returns the Account user name
 func (p *StratioProvider) GetUserName(ctx context.Context, s *sessions.SessionState) (string, error) {
-	logger.Print("[STG] GetUsername")
-
 	// Retrieve user info
 	userInfo, err := p.getUserInfo(ctx, s)
 	if err != nil {
 		return "", fmt.Errorf("failed to retrieve user info: %v", err)
 	}
-	logger.Printf("[STG] GetUsername - userInfo.UID: %s\n", userInfo.UID)
 	return userInfo.UID, nil
 }
 
