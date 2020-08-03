@@ -19,7 +19,7 @@ import (
 type StratioProvider struct {
 	*ProviderData
 	// SISHost string
-	Tenant string
+	// Tenant string
 }
 
 var _ Provider = (*StratioProvider)(nil)
@@ -182,6 +182,7 @@ func (p *StratioProvider) getUserInfo(ctx context.Context, s *sessions.SessionSt
 		tenant, _ := attributes.GetIndex(i).Get("tenant").String()
 		if tenant != "" {
 			userInfo.Tenant = tenant
+			s.Tenant = tenant
 		}
 
 		cn, _ := attributes.GetIndex(i).Get("cn").String()

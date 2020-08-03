@@ -25,6 +25,7 @@ type SessionState struct {
 	Email             string     `json:",omitempty" msgpack:"e,omitempty"`
 	User              string     `json:",omitempty" msgpack:"u,omitempty"`
 	PreferredUsername string     `json:",omitempty" msgpack:"pu,omitempty"`
+	Tenant            string     `json:",omitempty" msgpack:"t,omitempty"`
 }
 
 // IsExpired checks whether the session has expired
